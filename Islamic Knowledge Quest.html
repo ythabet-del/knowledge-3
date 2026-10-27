@@ -1,0 +1,809 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Islamic Knowledge Quest</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=El+Messiri:wght@500;600;700&family=Figtree:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: projector-first game board — question stage on the left, live team board on the right; stacks to one column on phones.
+   Deliberately single-theme: a deep night-blue "majlis" with dark-gold geometry, so it reads the same on any host theme. */
+:root{
+  --bg:#071731; --bg2:#0c2250; --panel:#10295c; --panel2:#163674;
+  --line:rgba(214,163,30,.34); --line2:rgba(150,185,240,.18);
+  --blue:#2d6fd8; --sky:#93c2ff; --gold:#c8961a; --gold-hi:#f1c23d;
+  --text:#eef3fc; --muted:#a3b5d4; --ok:#3fca8b; --bad:#ec6c60;
+  --display:"El Messiri", Georgia, "Times New Roman", serif;
+  --body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --arabic:"Amiri", "Geeza Pro", "Traditional Arabic", serif;
+  --pattern:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='76' height='76' viewBox='0 0 76 76'%3E%3Cg fill='none' stroke='%23d6a31e' stroke-opacity='.09'%3E%3Crect x='24' y='24' width='28' height='28'/%3E%3Crect x='24' y='24' width='28' height='28' transform='rotate(45 38 38)'/%3E%3Ccircle cx='38' cy='38' r='5'/%3E%3C/g%3E%3C/svg%3E");
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100%;background-color:var(--bg);
+  background-image:radial-gradient(1100px 560px at 85% -12%,rgba(45,111,216,.38),transparent 62%),radial-gradient(900px 520px at -8% 112%,rgba(200,150,26,.2),transparent 60%),var(--pattern);
+  background-attachment:fixed;color:var(--text);font:15px/1.55 var(--body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+a{color:var(--sky);font-weight:600}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+.wrap{max-width:1380px;margin:0 auto;padding-block:14px 130px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.muted{color:var(--muted)}
+.eyebrow{font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:var(--gold-hi)}
+
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand h1{font-size:clamp(1.25rem,2.4vw,1.75rem);font-weight:700;letter-spacing:.01em}
+.brand h1 span{color:var(--gold-hi)}
+.star{width:40px;height:40px;flex:none}
+.pills{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:99px;padding:5px 11px;font-size:.8rem;font-weight:700;color:var(--muted);background:rgba(255,255,255,.03)}
+.pill.gold{border-color:var(--line);color:var(--gold-hi)}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.pill .dot.off{background:var(--gold-hi)}
+.tabs{display:inline-flex;border:1px solid var(--line2);border-radius:12px;overflow:hidden}
+.tabs button{background:transparent;border:0;color:var(--muted);font:inherit;font-weight:700;padding:7px 13px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--blue);color:#fff}
+.banner{margin-top:12px;padding:10px 14px;border-radius:12px;border:1px dashed var(--line);color:var(--muted);font-size:.88rem;background:rgba(200,150,26,.06)}
+
+/* generic */
+.card{background:linear-gradient(180deg,rgba(22,54,116,.78),rgba(12,34,80,.82));border:1px solid var(--line2);border-radius:18px;padding:20px;min-width:0}
+.card.stage{border-color:var(--line)}
+.card h3{font-size:1.15rem;margin-bottom:10px}
+.label{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--muted);margin:0 0 8px}
+.btn{font:inherit;font-weight:800;border-radius:12px;padding:11px 18px;border:1px solid transparent;cursor:pointer;color:var(--text);transition:transform .12s,filter .12s}
+.btn:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-1px)}
+.btn.gold{background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:#1c1402}
+.btn.blue{background:var(--blue);color:#fff}
+.btn.ghost{background:rgba(255,255,255,.03);border-color:var(--line2)}
+.btn.warn{background:rgba(236,108,96,.14);border-color:rgba(236,108,96,.5)}
+.btn.big{font-size:1.08rem;padding:14px 26px}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn:focus-visible,.opt:focus-visible,.tp:focus-visible,input:focus-visible,select:focus-visible,.seg button:focus-visible,.tabs button:focus-visible,.cat:focus-visible,summary:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+input,select{background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:10px;color:var(--text);padding:9px 11px;font:inherit;width:100%;min-width:0}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:12px;overflow:hidden;flex-wrap:wrap}
+.seg button{background:transparent;color:var(--text);border:0;padding:8px 14px;font:inherit;font-weight:700;cursor:pointer;font-variant-numeric:tabular-nums}
+.seg button[aria-pressed="true"]{background:var(--gold);color:#1c1402}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.stack{display:grid;gap:16px}
+
+/* hero */
+.hero{margin-top:14px;position:relative;overflow:hidden;padding:26px 28px;border-radius:22px;border:1px solid var(--line);
+  background:linear-gradient(118deg,#0b2758 0%,#123f8a 62%,#1a4fa3 100%)}
+.hero h2{font-size:clamp(1.7rem,3.6vw,2.7rem);font-weight:700;max-width:20ch;margin-top:8px}
+.hero h2 em{font-style:normal;color:var(--gold-hi)}
+.hero p{max-width:62ch;color:#d6e3f7;margin:10px 0 0}
+.hero .bigstar{position:absolute;right:-60px;top:-60px;width:300px;height:300px;opacity:.22;pointer-events:none}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:18px;max-width:820px}
+.rule{background:rgba(7,23,49,.45);border:1px solid var(--line2);border-radius:12px;padding:10px 12px}
+.rule b{display:block;font-family:var(--display);font-size:1.3rem;color:var(--gold-hi);font-variant-numeric:tabular-nums}
+.rule span{font-size:.8rem;color:var(--muted)}
+
+/* setup */
+.setup{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;margin-top:16px}
+.teamgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.trow{display:flex;gap:10px;align-items:center;min-width:0}
+.sw{width:14px;height:14px;border-radius:4px;background:var(--c);flex:none;box-shadow:0 0 0 2px rgba(255,255,255,.12)}
+.cats{display:flex;gap:8px;flex-wrap:wrap}
+.cat{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--line2);background:rgba(255,255,255,.03);color:var(--muted);border-radius:12px;padding:8px 12px;font:inherit;font-weight:700;cursor:pointer}
+.cat[aria-pressed="true"]{border-color:var(--gold-hi);color:var(--text);background:rgba(241,194,61,.1)}
+.cat small{color:var(--muted);font-weight:600}
+.roster{display:grid;gap:8px}
+.rteam{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line2)}
+.rteam b{display:block}
+.rteam .names{font-size:.85rem;color:var(--muted);overflow-wrap:anywhere}
+.share{font-size:.86rem;color:var(--muted);line-height:1.5}
+.share ol{padding-left:1.2em;margin:6px 0 0}
+
+/* board */
+.progress{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.bar{flex:1 1 220px;height:9px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--gold-hi));border-radius:99px;transition:width .5s}
+.missions{display:flex;gap:6px;flex-wrap:wrap}
+.mchip{display:inline-flex;gap:6px;align-items:center;padding:4px 10px;border-radius:99px;border:1px solid var(--line2);font-size:.78rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.mchip.on{border-color:var(--gold-hi);color:var(--gold-hi);background:rgba(241,194,61,.08)}
+.board{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:16px;margin-top:14px;align-items:start}
+.qhead{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.qmeta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.tag{font-size:.74rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:8px;background:rgba(45,111,216,.28);color:var(--sky)}
+.tag.exp{background:rgba(241,194,61,.16);color:var(--gold-hi)}
+.mission{font-size:.85rem;color:var(--muted);font-weight:600}
+.qtext{font-family:var(--display);font-weight:600;font-size:clamp(1.3rem,2.6vw,2rem);line-height:1.32;margin:6px 0 14px;text-wrap:balance}
+.arabic{font-family:var(--arabic);font-size:clamp(1.6rem,3vw,2.2rem);direction:rtl;text-align:center;color:var(--gold-hi);background:rgba(200,150,26,.08);border:1px dashed var(--line);border-radius:14px;padding:6px 14px 10px;margin:0 0 16px;line-height:1.9}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--line2);background:rgba(255,255,255,.035);color:var(--text);font:inherit;font-size:1.04rem;line-height:1.4;min-height:64px;cursor:default;position:relative;min-width:0}
+button.opt{cursor:pointer}
+button.opt:hover:not(:disabled){border-color:var(--sky);background:rgba(147,194,255,.09)}
+button.opt:disabled{cursor:default}
+.opt .L{flex:0 0 34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--blue);font-weight:800;font-family:var(--display)}
+.opt .t{min-width:0;overflow-wrap:anywhere}
+.opt.mine{border-color:var(--gold-hi);box-shadow:0 0 0 3px rgba(241,194,61,.25)}
+.opt.mine .L{background:var(--gold-hi);color:#1c1402}
+.opt.correct{border-color:var(--ok);background:rgba(63,202,139,.15)}
+.opt.correct .L{background:var(--ok);color:#052313}
+.opt.wrong{border-color:var(--bad);background:rgba(236,108,96,.12)}
+.opt.wrong .L{background:var(--bad);color:#2a0703}
+.opt.dim{opacity:.5}
+.who{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.tchip{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:700;padding:2px 8px 2px 6px;border-radius:99px;background:rgba(7,23,49,.6);border:1px solid var(--c)}
+.tchip i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.ring{position:relative;width:96px;height:96px;flex:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:9}
+.ring .rt{stroke:rgba(255,255,255,.1)}
+.ring .rp{stroke:var(--gold-hi);stroke-linecap:round;transition:stroke .3s}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-size:1.9rem;font-variant-numeric:tabular-nums}
+.ring.urgent .rp{stroke:var(--bad)}
+.ring.urgent b{color:var(--bad);animation:pulse 1s infinite}
+.ready{display:grid;place-items:center;text-align:center;padding:40px 10px;gap:10px}
+.ready .num{font-family:var(--display);font-size:clamp(4.5rem,12vw,8rem);line-height:1;color:var(--gold-hi);font-variant-numeric:tabular-nums;animation:pulse 1s infinite}
+.ready h2{font-size:clamp(1.4rem,3vw,2.2rem)}
+.explain{margin-top:16px;padding:16px 18px;border-radius:14px;background:rgba(63,202,139,.08);border:1px solid rgba(63,202,139,.38)}
+.explain b.k{display:block;color:var(--ok);margin-bottom:4px}
+.src{font-size:.86rem;color:var(--muted);margin-top:10px;overflow-wrap:anywhere}
+.hint{background:rgba(241,194,61,.1);border-left:4px solid var(--gold-hi);padding:10px 14px;border-radius:0 12px 12px 0;margin-top:14px}
+.status{margin-top:14px;padding:11px 14px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--line2);font-weight:600}
+.status.lock{border-color:var(--gold-hi);color:var(--gold-hi)}
+
+/* team board */
+.tb{display:grid;gap:9px}
+.team{--c:#fff;display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid var(--line2);border-left:5px solid var(--c);position:relative}
+.team .rank{font-family:var(--display);font-weight:700;color:var(--gold-hi);font-size:1.2rem;text-align:center;font-variant-numeric:tabular-nums}
+.team .nm{font-weight:800;overflow-wrap:anywhere;line-height:1.25}
+.team .sub{font-size:.76rem;color:var(--muted)}
+.team .sc{font-family:var(--display);font-size:1.55rem;font-weight:700;font-variant-numeric:tabular-nums;text-align:right;line-height:1.1}
+.team .st{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;text-align:right;color:var(--muted)}
+.team .st.lk{color:var(--gold-hi)}
+.team .st.ok{color:var(--ok)}
+.team .st.no{color:var(--bad)}
+.team.locked{background:rgba(241,194,61,.07)}
+.team.win{animation:glow 1.8s ease-out 2}
+.team.me{box-shadow:0 0 0 2px var(--sky)}
+.hist{display:flex;gap:3px;margin-top:5px;flex-wrap:wrap}
+.hist i{width:9px;height:9px;border-radius:3px;background:rgba(255,255,255,.13)}
+.hist i.y{background:var(--ok)}
+.hist i.n{background:var(--bad)}
+.flame{color:var(--gold-hi);font-weight:800;font-size:.76rem}
+.delta{position:absolute;right:12px;top:-12px;background:var(--ok);color:#052313;font-weight:800;font-size:.85rem;border-radius:99px;padding:2px 9px;animation:floatUp 2.6s ease-out forwards}
+
+/* dock */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;
+  padding-top:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:rgba(7,23,49,.93);backdrop-filter:blur(8px);border-top:1px solid var(--line)}
+.dock .info{color:var(--muted);font-size:.85rem;font-weight:600}
+
+/* player */
+.pwrap{max-width:780px;margin:14px auto 0;display:grid;gap:16px}
+.tpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tp{--c:#fff;border:2px solid var(--line2);border-radius:14px;padding:12px;background:rgba(255,255,255,.035);color:var(--text);font:inherit;text-align:left;cursor:pointer;display:grid;gap:4px;min-width:0}
+.tp b{display:flex;gap:8px;align-items:center;overflow-wrap:anywhere}
+.tp small{color:var(--muted)}
+.tp[aria-pressed="true"]{border-color:var(--c);background:rgba(255,255,255,.07);box-shadow:0 0 0 3px rgba(255,255,255,.08)}
+.youare{display:flex;gap:14px;align-items:center}
+.badge{--c:#fff;width:58px;height:58px;flex:none;border-radius:16px;display:grid;place-items:center;background:var(--c);color:#071731;font-family:var(--display);font-weight:700;font-size:1.6rem}
+.breakdown{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.breakdown span{font-size:.8rem;font-weight:700;padding:4px 9px;border-radius:8px;background:rgba(255,255,255,.06)}
+
+/* final */
+.podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:end;max-width:720px;margin:10px auto 0}
+.pod{text-align:center;display:grid;gap:8px;min-width:0}
+.pod .nm{font-family:var(--display);font-weight:700;font-size:1.15rem;overflow-wrap:anywhere}
+.pod .pts{font-weight:800;color:var(--gold-hi);font-variant-numeric:tabular-nums}
+.pod .blk{border-radius:14px 14px 0 0;background:linear-gradient(180deg,var(--c),rgba(255,255,255,.04));display:grid;place-items:start center;padding-top:12px;font-family:var(--display);font-size:2.2rem;font-weight:700;color:#071731}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line2);white-space:nowrap}
+th{font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+td.num,th.num{text-align:right}
+details.rev{border:1px solid var(--line2);border-radius:12px;padding:10px 14px;background:rgba(255,255,255,.03)}
+details.rev+details.rev{margin-top:8px}
+details.rev summary{cursor:pointer;font-weight:700}
+details.rev p{margin:8px 0 0}
+
+/* overlays */
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:45}
+.toasts{position:fixed;z-index:35;top:calc(12px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));display:grid;gap:8px;width:min(360px,calc(100vw - 24px))}
+.toast{--c:var(--gold-hi);background:var(--panel2);border:1px solid var(--line2);border-left:6px solid var(--c);border-radius:12px;padding:10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.35);animation:slideIn .45s ease-out,fadeOut .6s ease-in 6s forwards}
+.toast b{display:block}
+.toast span{font-size:.86rem;color:var(--muted)}
+.celebrate{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:rgba(4,12,28,.74);backdrop-filter:blur(3px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px}
+.cbox{width:min(520px,100%);text-align:center;padding:30px 24px;border-radius:24px;background:linear-gradient(160deg,var(--panel2),var(--bg));border:2px solid var(--gold-hi);animation:pop .55s cubic-bezier(.2,1.4,.4,1)}
+.cbox.miss{border-color:var(--sky)}
+.cbox h2{font-size:clamp(1.6rem,4vw,2.3rem);margin-top:10px}
+.cbox .cpts{font-family:var(--display);font-size:clamp(2.8rem,9vw,4rem);color:var(--gold-hi);line-height:1.1;margin-top:8px;font-variant-numeric:tabular-nums}
+.cbox p{color:#d6e3f7;margin:10px 0 18px}
+.seal{width:86px;height:86px;margin:0 auto;display:block}
+
+@keyframes pulse{50%{opacity:.55}}
+@keyframes glow{0%{box-shadow:0 0 0 0 var(--c)}100%{box-shadow:0 0 0 14px transparent}}
+@keyframes floatUp{0%{opacity:0;transform:translateY(10px)}15%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0;transform:translateY(-16px)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(20px)}}
+@keyframes pop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinstar{animation:spin 18s linear infinite}
+
+@media (max-width:1060px){.board{grid-template-columns:minmax(0,1fr)}.setup{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){
+  .opts{grid-template-columns:minmax(0,1fr)}
+  .teamgrid{grid-template-columns:minmax(0,1fr)}
+  .ring{width:76px;height:76px}.ring b{font-size:1.5rem}
+  .card{padding:16px}
+  .hero{padding:22px 18px}
+  .podium .blk{font-size:1.6rem}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg class="star" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#f1c23d" stroke-width="5"><rect x="22" y="22" width="56" height="56" rx="3"/><rect x="22" y="22" width="56" height="56" rx="3" transform="rotate(45 50 50)"/></g><circle cx="50" cy="50" r="11" fill="#2d6fd8"/></svg>
+      <h1>Islamic Knowledge <span>Quest</span></h1>
+    </div>
+    <div class="pills" id="topright"><span class="pill"><span class="dot off"></span>Connecting…</span></div>
+  </header>
+  <div id="banner"></div>
+  <main id="view" aria-live="polite"></main>
+</div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div id="overlay"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<script>
+/* ---------------- Question bank ----------------
+   Each item: id, c (category), l (1 = Advanced, 2 = Expert), q, ar (optional Arabic example),
+   o (options — the FIRST is correct; display order is shuffled deterministically), h (hint), e (explanation), s (source), u (link). */
+const CATS={
+  seerah:{name:"Seerah",mission:"The Prophetic Journey"},
+  hadith:{name:"Hadith",mission:"Guardians of Hadith"},
+  tajweed:{name:"Tajweed",mission:"The Art of Recitation"},
+  fiqh:{name:"Fiqh",mission:"Faith in Practice"},
+  general:{name:"General",mission:"Foundations of Faith"}
+};
+const RAW=[
+// SEERAH
+{id:"s1",c:"seerah",l:1,q:"How old was the Prophet ﷺ when revelation began, and how long did he then remain in Makkah before the Hijrah?",o:["40 years old; 13 years","35 years old; 10 years","40 years old; 23 years","45 years old; 8 years"],h:"His whole prophetic mission lasted 23 years, ten of them in Madinah.",e:"Ibn ‘Abbas reported that the Prophet ﷺ was sent at forty, stayed in Makkah thirteen years receiving revelation, then migrated and lived ten years in Madinah.",s:"Sahih al-Bukhari 3902",u:"https://sunnah.com/bukhari:3902"},
+{id:"s2",c:"seerah",l:1,q:"Which two losses gave the ‘Year of Sorrow’ (‘Am al-Huzn) its name?",o:["Khadijah and Abu Talib","Hamzah and Ja‘far","Abu Bakr and Khadijah","Abu Talib and Hamzah"],h:"One was his wife; the other was the uncle who protected him from Quraysh.",e:"Around the tenth year of prophethood, Khadijah and Abu Talib died within a short time of each other. Losing his closest supporter at home and his tribal protector left the Prophet ﷺ exposed to greater hostility, shortly before the journey to Ta’if.",s:"Ibn Hisham, al-Sirah al-Nabawiyyah; al-Mubarakpuri, al-Raheeq al-Makhtum",u:"https://www.britannica.com/biography/Khadijah"},
+{id:"s3",c:"seerah",l:2,q:"Who is recorded in the biographical literature as the first martyr of Islam?",o:["Sumayyah bint Khayyat","Bilal ibn Rabah","Mus‘ab ibn ‘Umayr","Hamzah ibn ‘Abd al-Muttalib"],h:"She was the mother of ‘Ammar ibn Yasir.",e:"Sumayyah bint Khayyat, mother of ‘Ammar, was killed by Abu Jahl for refusing to renounce Islam in Makkah. Her husband Yasir also died under persecution. The Prophet ﷺ promised the family of Yasir Paradise.",s:"Ibn Sa‘d, al-Tabaqat al-Kubra; Ibn Hajar, al-Isabah fi Tamyiz al-Sahabah",u:""},
+{id:"s4",c:"seerah",l:1,q:"Where was the Pledge of Ridwan (Bay‘at al-Ridwan), praised in the Qur’an, given?",o:["Under a tree at al-Hudaybiyyah","On the plain of ‘Arafah","At al-‘Aqabah near Mina","Inside Masjid Quba"],h:"Allah was pleased with the believers “when they pledged allegiance to you under the tree.”",e:"In 6 AH, after a rumour that ‘Uthman had been killed while negotiating in Makkah, the Companions pledged allegiance to the Prophet ﷺ under a tree at al-Hudaybiyyah. Qur’an 48:18 records Allah’s pleasure with them. Do not confuse it with the earlier Pledges of al-‘Aqabah.",s:"Qur’an 48:18",u:"https://quran.com/48/18"},
+{id:"s5",c:"seerah",l:1,q:"In which campaign did the Muslims dig a defensive trench, a strategy associated with Salman al-Farisi?",o:["Al-Khandaq (al-Ahzab), 5 AH","Uhud, 3 AH","Hunayn, 8 AH","Khaybar, 7 AH"],h:"Surah 33 is named after the confederate forces.",e:"In 5 AH a confederacy besieged Madinah. The Muslims dug a trench across the open northern approach; the siege collapsed after a fierce wind and division among the attackers. Qur’an 33:9–27 describes the events.",s:"Qur’an 33:9–27; Sahih al-Bukhari, Book of Military Expeditions (al-Maghazi)",u:"https://quran.com/33/9"},
+{id:"s6",c:"seerah",l:2,q:"Ka‘b ibn Malik’s account of staying behind, a fifty-day boycott, and accepted repentance relates to which expedition?",o:["Tabuk","Badr","Mu’tah","Banu al-Mustaliq"],h:"It took place in 9 AH during intense heat.",e:"Ka‘b ibn Malik and two others stayed behind from Tabuk without a valid excuse. They told the truth instead of offering excuses, endured a boycott, and Allah accepted their repentance in Qur’an 9:118. The narration is a classic lesson on truthfulness.",s:"Sahih al-Bukhari 4418; Qur’an 9:118",u:"https://sunnah.com/bukhari:4418"},
+{id:"s7",c:"seerah",l:1,q:"Which masjid did the Prophet ﷺ establish first, on reaching the outskirts of Madinah during the Hijrah?",o:["Masjid Quba","Masjid al-Qiblatayn","Masjid al-Nabawi","Masjid al-Jumu‘ah"],h:"It was built among the clan of Banu ‘Amr ibn ‘Awf.",e:"Arriving at Quba, the Prophet ﷺ stayed with Banu ‘Amr ibn ‘Awf and founded the masjid there before entering Madinah proper. Many commentators connect Qur’an 9:108, “a masjid founded on taqwa from the first day,” with it.",s:"Qur’an 9:108; Hijrah narrations in Sahih al-Bukhari (Book of the Merits of the Ansar)",u:"https://quran.com/9/108"},
+{id:"s8",c:"seerah",l:1,q:"During the Isra’ and Mi‘raj, which act of worship was made obligatory?",o:["The five daily prayers","Fasting in Ramadan","Zakat","Hajj"],h:"Its number was reduced from fifty.",e:"In the Mi‘raj narration the prayers were first set at fifty and then reduced, after repeated requests, to five, carrying the reward of fifty.",s:"Sahih al-Bukhari 349; Qur’an 17:1",u:"https://sunnah.com/bukhari:349"},
+{id:"s9",c:"seerah",l:2,q:"What is the document that set out mutual obligations between the Muhajirun, the Ansar and the Jewish tribes of Madinah?",o:["The Sahifah (Constitution) of Madinah","The Treaty of Hudaybiyyah","The Second Pledge of al-‘Aqabah","The Farewell Sermon"],h:"It was written soon after the Hijrah and called the believers “one ummah.”",e:"Preserved by Ibn Ishaq, the Sahifah described the believers as one community, set out duties of mutual defence and blood-money, recognised the Jewish tribes with their own religion, and referred disputes to Allah and His Messenger ﷺ.",s:"Ibn Hisham, al-Sirah al-Nabawiyyah (from Ibn Ishaq)",u:"https://www.britannica.com/topic/Constitution-of-Medina"},
+{id:"s10",c:"seerah",l:2,q:"Which Companion was sent to Yathrib before the Hijrah to teach the Qur’an, and is often called the first ambassador of Islam?",o:["Mus‘ab ibn ‘Umayr","Zayd ibn Harithah","Mu‘adh ibn Jabal","Abu ‘Ubaydah ibn al-Jarrah"],h:"He later carried the banner at Uhud and was martyred there.",e:"After the First Pledge of al-‘Aqabah, Mus‘ab ibn ‘Umayr was sent to teach the people of Yathrib. Leaders of the Aws, including Sa‘d ibn Mu‘adh, accepted Islam through him, preparing the ground for the Hijrah.",s:"Ibn Hisham, al-Sirah al-Nabawiyyah; Sahih al-Bukhari, Book of the Merits of the Ansar",u:""},
+// HADITH
+{id:"h1",c:"hadith",l:2,q:"In Ibn al-Salah’s classic definition, a sahih hadith has a connected chain of upright, precise narrators and is free from which two flaws?",o:["Shudhudh (irregularity) and ‘illah (hidden defect)","Tadlis and irsal","Repetition and paraphrase","Isolation (gharabah) and mawquf wording"],h:"One means contradicting more reliable narrators; the other is a concealed flaw.",e:"Ibn al-Salah defined sahih as a hadith with a continuous chain of narrators who are ‘adl (upright) and dabit (precise), free from shudhudh and ‘illah. This five-condition definition became the standard in later hadith manuals.",s:"Ibn al-Salah, Muqaddimah fi ‘Ulum al-Hadith, ch. 1",u:""},
+{id:"h2",c:"hadith",l:1,q:"A report transmitted by so many narrators at every level that collusion on a falsehood is inconceivable is called:",o:["Mutawatir","Ahad","Mursal","Gharib"],h:"Its root means “to follow in continuous succession.”",e:"Mutawatir reports give certain knowledge. Ahad reports fall short of that level; gharib has a single narrator at some stage; mursal is a report in which a Successor attributes words directly to the Prophet ﷺ.",s:"Ibn Hajar al-‘Asqalani, Nukhbat al-Fikar",u:""},
+{id:"h3",c:"hadith",l:1,q:"A narration that stops at a Companion, being his own statement or action rather than the Prophet’s ﷺ, is termed:",o:["Mawquf","Marfu‘","Maqtu‘","Musnad"],h:"From the root meaning “stopped.”",e:"Marfu‘ is “raised” to the Prophet ﷺ; mawquf “stops” at a Companion; maqtu‘ ends with a Successor (tabi‘i). Musnad describes a connected chain reaching the Prophet ﷺ.",s:"Ibn Hajar al-‘Asqalani, Nukhbat al-Fikar",u:""},
+{id:"h4",c:"hadith",l:2,q:"Imam al-Nawawi’s famous “Forty Hadith” actually contains how many hadith?",o:["42","40","41","50"],h:"Ibn Rajab later added eight more, bringing the total to fifty.",e:"Al-Nawawi’s al-Arba‘in contains 42 hadith. Ibn Rajab al-Hanbali added eight in his commentary Jami‘ al-‘Ulum wa’l-Hikam, making fifty.",s:"Al-Nawawi, al-Arba‘in al-Nawawiyyah; Ibn Rajab, Jami‘ al-‘Ulum wa’l-Hikam",u:"https://sunnah.com/nawawi40"},
+{id:"h5",c:"hadith",l:1,q:"Which of these is NOT one of the Six Books (al-Kutub al-Sittah)?",o:["Musnad Ahmad","Sunan Abi Dawud","Jami‘ al-Tirmidhi","Sunan al-Nasa’i"],h:"This collection is arranged by Companion, not by legal topic.",e:"The Six Books are al-Bukhari, Muslim, Abu Dawud, al-Tirmidhi, al-Nasa’i and Ibn Majah; some scholars list al-Muwatta’ in place of Ibn Majah. Musnad Ahmad is a vast collection ordered by the Companion who narrates.",s:"Standard introductions to ‘Ulum al-Hadith",u:"https://sunnah.com/ahmad"},
+{id:"h6",c:"hadith",l:1,q:"Complete the hadith: “The Muslim is the one from whose tongue and hand…”",o:["…the Muslims are safe","…the poor are fed","…the truth is always spoken","…the masjid is built"],h:"The second half defines the true muhajir as one who leaves what Allah has forbidden.",e:"The hadith links Islam to the safety of others from one’s speech and actions, and defines the true emigrant (muhajir) as one who abandons what Allah has prohibited.",s:"Sahih al-Bukhari 10",u:"https://sunnah.com/bukhari:10"},
+{id:"h7",c:"hadith",l:2,q:"“Whoever introduces into this matter of ours something that is not from it, it is rejected.” Scholars treat this hadith as the yardstick for:",o:["The outward validity of acts of worship","Rejecting all new technology","Permitting any custom done with good intent","Ranking hadith narrators"],h:"It is often paired with the hadith of intentions: one weighs the inner act, the other the outward form.",e:"Al-Nawawi called it a great principle of Islam. The hadith of intentions measures the inner act; this hadith measures the outward form against the Sunnah. It concerns additions to the religion, not worldly inventions.",s:"Sahih al-Bukhari 2697; Sahih Muslim 1718",u:"https://sunnah.com/bukhari:2697"},
+{id:"h8",c:"hadith",l:1,q:"Which Imam compiled al-Muwatta’, one of the earliest surviving collections of hadith and fiqh?",o:["Malik ibn Anas","Ahmad ibn Hanbal","Muhammad ibn Idris al-Shafi‘i","Abu Hanifah al-Nu‘man"],h:"He was known as the Imam of Dar al-Hijrah (Madinah).",e:"Imam Malik (d. 179 AH) compiled al-Muwatta’, combining Prophetic hadith, Companion reports and the practice (‘amal) of the people of Madinah.",s:"Malik ibn Anas, al-Muwatta’",u:"https://sunnah.com/malik"},
+{id:"h9",c:"hadith",l:1,q:"“Allah has prescribed ihsan in all things… if you slaughter, slaughter well.” What does this hadith teach?",o:["Excellence and mercy apply to every task, even toward animals","Ihsan applies only to prayer","Only scholars may slaughter animals","Kindness to animals is optional"],h:"The hadith also mentions sharpening the blade and sparing the animal suffering.",e:"Ihsan (excellence) is a duty in every act. Even in slaughter, the hadith requires a sharp blade and sparing the animal distress.",s:"Sahih Muslim 1955",u:"https://sunnah.com/muslim:1955"},
+{id:"h10",c:"hadith",l:2,q:"A narrator who hides a gap in the chain by using ambiguous wording such as “from so-and-so” commits:",o:["Tadlis","Idraj","Tashif","Ikhtilat"],h:"From a root used of a seller hiding a defect in goods.",e:"Tadlis conceals a break or a weak link in the chain. Idraj inserts a narrator’s own words into the text; tashif is a misreading of letters or dots; ikhtilat is a narrator’s memory deteriorating late in life.",s:"Ibn al-Salah, Muqaddimah; Ibn Hajar, Nukhbat al-Fikar",u:""},
+// TAJWEED
+{id:"t1",c:"tajweed",l:1,q:"When nun sakinah or tanwin is followed by one of the letters gathered in يَرْمَلُون, which rule applies?",ar:"فَمَن يَعْمَلْ مِثْقَالَ ذَرَّةٍ",o:["Idgham (merging)","Izhar (clear pronunciation)","Iqlab (conversion)","Ikhfa’ (concealment)"],h:"The nun disappears into the next letter.",e:"Idgham merges the nun into the following letter: with ghunnah before ي ن م و, and without ghunnah before ل ر. Example: مَن يَعْمَلْ (99:7). Within a single word, such as دُنْيَا, izhar applies instead.",s:"Al-Jamzuri, Tuhfat al-Atfal; Qur’an 99:7",u:"https://quran.com/99/7"},
+{id:"t2",c:"tajweed",l:1,q:"Nun sakinah or tanwin followed by the letter ب is read as:",ar:"مِنۢ بَعْدِ مِيثَٰقِهِۦ",o:["A concealed mim with ghunnah (Iqlab)","A clear nun (Izhar)","Merged into ب without ghunnah","Silent, with no nasal sound"],h:"Most mushafs mark it with a small mim above the nun.",e:"Iqlab turns the nun sound into a mim, held with ghunnah for two counts with the lips lightly closed. Example: مِنۢ بَعْدِ (2:27).",s:"Al-Jamzuri, Tuhfat al-Atfal; Qur’an 2:27",u:"https://quran.com/2/27"},
+{id:"t3",c:"tajweed",l:1,q:"Which group lists the six throat letters that require Izhar Halqi after nun sakinah or tanwin?",ar:"مَنْ ءَامَنَ بِٱللَّهِ",o:["ء هـ ع ح غ خ","ق ط ب ج د","ي ر م ل و ن","ت ث د ذ ز س"],h:"They are articulated from the throat (al-halq).",e:"Before the six throat letters the nun is pronounced clearly without extended ghunnah. Example: مَنْ ءَامَنَ (2:62). The other options are the qalqalah letters, the idgham letters, and a set of ikhfa’ letters.",s:"Al-Jamzuri, Tuhfat al-Atfal; Qur’an 2:62",u:"https://quran.com/2/62"},
+{id:"t4",c:"tajweed",l:1,q:"The letters of Qalqalah are gathered in the phrase:",ar:"قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ",o:["قُطْبُ جَدٍّ","يَرْمَلُون","اِبْغِ حَجَّكَ","طِبْ ثُمَّ صِلْ"],h:"Five letters that “echo” when they carry sukun.",e:"ق ط ب ج د bounce or echo when sakin, most strongly when stopping at the end of a word, as in ٱلْفَلَقِ (113:1). اِبْغِ حَجَّكَ begins the mnemonic for the moon letters.",s:"Ibn al-Jazari, al-Muqaddimah al-Jazariyyah; Qur’an 113:1",u:"https://quran.com/113/1"},
+{id:"t5",c:"tajweed",l:2,q:"In وَلَا ٱلضَّآلِّينَ (1:7) the madd before the doubled lam is Madd Lazim. How many counts is it held?",ar:"وَلَا ٱلضَّآلِّينَ",o:["6","2","4 or 5","2, 4 or 6, as the reciter chooses"],h:"Lazim means “binding”: all readers agree on its length.",e:"This is madd lazim kalimi muthaqqal: a madd letter followed by a shaddah in the same word. All the canonical readers prolong it six counts.",s:"Ibn al-Jazari, al-Nashr fi al-Qira’at al-‘Ashr; Qur’an 1:7",u:"https://quran.com/1/7"},
+{id:"t6",c:"tajweed",l:2,q:"Mim sakinah followed by ب, as in تَرْمِيهِم بِحِجَارَةٍ (105:4), is read with:",ar:"تَرْمِيهِم بِحِجَارَةٍ",o:["Ikhfa’ Shafawi (labial concealment) with ghunnah","Izhar Shafawi","Idgham Mutamathilayn","Iqlab"],h:"The rule’s name refers to the lips (shafah).",e:"Ikhfa’ shafawi applies only before ب: the mim is concealed with a two-count ghunnah. Before another م it is idgham (mithlayn); before every other letter it is izhar shafawi.",s:"Al-Jamzuri, Tuhfat al-Atfal; Qur’an 105:4",u:"https://quran.com/105/4"},
+{id:"t7",c:"tajweed",l:1,q:"In وَٱلشَّمْسِ (91:1) the lam of the definite article is silent. Why?",ar:"وَٱلشَّمْسِ وَضُحَىٰهَا",o:["ش is a sun letter (idgham shamsi)","ش is a moon letter (izhar qamari)","ش is a qalqalah letter","ش is a throat letter"],h:"The category is named after the very word in this verse.",e:"Before the 14 sun letters the lam of “al-” merges into the next letter, which takes a shaddah. Before the 14 moon letters (اِبْغِ حَجَّكَ وَخَفْ عَقِيمَهُ) the lam is pronounced.",s:"Al-Jamzuri, Tuhfat al-Atfal; Qur’an 91:1",u:"https://quran.com/91/1"},
+{id:"t8",c:"tajweed",l:2,q:"How long is the ghunnah held on a nun or mim carrying shaddah, as in إِنَّ or ثُمَّ?",ar:"مِنَ ٱلْجِنَّةِ وَٱلنَّاسِ",o:["Two counts","One count","Four counts","Six counts"],h:"The same length as most ghunnah rules.",e:"Nun and mim mushaddadah carry the most complete ghunnah, held for two counts. Example: ٱلْجِنَّةِ and ٱلنَّاسِ (114:6).",s:"Al-Jamzuri, Tuhfat al-Atfal; Qur’an 114:6",u:"https://quran.com/114/6"},
+{id:"t9",c:"tajweed",l:2,q:"In Hafs ‘an ‘Asim via al-Shatibiyyah, Madd Muttasil (a madd letter followed by hamzah in the same word, as in جَآءَ) is held for:",ar:"إِذَا جَآءَ نَصْرُ ٱللَّهِ",o:["4 or 5 counts","2 counts only","6 counts only","1 count"],h:"It is called wajib (necessary): it must exceed the natural two counts.",e:"Madd wajib muttasil must be lengthened beyond the natural length. In Hafs via al-Shatibiyyah it is 4 or 5 counts; 6 is allowed when stopping on a word that ends in hamzah. Example: جَآءَ (110:1).",s:"Al-Shatibi, Hirz al-Amani; Qur’an 110:1",u:"https://quran.com/110/1"},
+// FIQH
+{id:"f1",c:"fiqh",l:1,q:"Which two obligatory prayers are NOT shortened when travelling (qasr)?",o:["Maghrib and Fajr","Dhuhr and ‘Asr","‘Isha’ and Fajr","Maghrib and ‘Isha’"],h:"Only the four-unit prayers are reduced.",e:"Qasr reduces the four-rak‘ah prayers (Dhuhr, ‘Asr and ‘Isha’) to two. Fajr (two) and Maghrib (three) stay as they are. The schools differ on the minimum distance and length of stay.",s:"Qur’an 4:101; Sahih al-Bukhari, Book of Shortening the Prayers",u:"https://quran.com/4/101"},
+{id:"f2",c:"fiqh",l:2,q:"The classical nisab for zakat on silver is five awaq. This equals roughly:",o:["200 dirhams (about 595 g of silver)","20 dinars (about 85 g)","100 dirhams (about 300 g)","Five awsuq of dates"],h:"One uqiyah equals forty dirhams.",e:"Five awaq × 40 dirhams = 200 dirhams, commonly converted to about 595 g of silver. The gold nisab is 20 dinars, about 85 g. Modern conversions differ slightly between scholars.",s:"Sahih Muslim 979; Sunan Abi Dawud 1573",u:"https://sunnah.com/muslim:979a"},
+{id:"f3",c:"fiqh",l:1,q:"What is the zakat rate on gold, silver and cash savings above the nisab held for a full lunar year?",o:["2.5% (one fortieth)","5%","10%","20%"],h:"Rub‘ al-‘ushr: a quarter of a tenth.",e:"Zakat on money is 2.5% after a full lunar year (hawl) above the nisab. Crops are 10% or 5% depending on irrigation, and buried treasure (rikaz) is 20%.",s:"Sahih al-Bukhari 1454 (Abu Bakr’s letter on zakat); Sunan Abi Dawud 1573",u:"https://sunnah.com/bukhari:1454"},
+{id:"f4",c:"fiqh",l:1,q:"According to Ibn ‘Umar’s report, when did the Prophet ﷺ order Zakat al-Fitr to be paid?",o:["Before people go out to the ‘Eid prayer","After the ‘Eid prayer","Only on the 27th night of Ramadan","Any time within a year"],h:"One of its aims is that the poor have enough on the day of ‘Eid.",e:"Zakat al-Fitr is one sa‘ of dates, barley or a similar staple for each person, to be given before the ‘Eid prayer. Many Companions paid it a day or two early.",s:"Sahih al-Bukhari 1503",u:"https://sunnah.com/bukhari:1503"},
+{id:"f5",c:"fiqh",l:2,q:"In usul al-fiqh, qiyas (analogy) extends a ruling from an original case to a new case because they share the same:",o:["‘Illah (effective cause)","Hikmah (wisdom) alone","Wording (lafz)","Isnad (chain)"],h:"Classic example: the prohibition of wine extended to every intoxicant.",e:"Qiyas has four pillars: the original case (asl), the new case (far‘), the ruling (hukm) and the ‘illah. Intoxication is the ‘illah of wine’s prohibition, so every intoxicant takes the same ruling.",s:"Al-Shafi‘i, al-Risalah; Sahih Muslim 2003 (“Every intoxicant is khamr”)",u:"https://sunnah.com/muslim:2003a"},
+{id:"f6",c:"fiqh",l:2,q:"Unsure whether you prayed three or four rak‘at? The hadith of Abu Sa‘id al-Khudri instructs you to:",o:["Build on what is certain (three), then perform sujud al-sahw","Restart the prayer from the beginning","Assume four and finish","Abandon the prayer"],h:"Certainty is not removed by doubt.",e:"The Prophet ﷺ said to discard the doubt, build on what is certain, and prostrate twice before the taslim. This applies the maxim al-yaqin la yazulu bi’l-shakk: certainty is not overruled by doubt.",s:"Sahih Muslim 571",u:"https://sunnah.com/muslim:571a"},
+{id:"f7",c:"fiqh",l:1,q:"Which situation permits tayammum (dry ablution) according to the Qur’an?",o:["No water is available, or using it would harm an ill person","Feeling tired or short of time","The water is cold but harmless","Only while travelling"],h:"Qur’an 5:6 mentions illness, travel, and not finding water.",e:"Tayammum replaces wudu or ghusl when water cannot be found or when using it would cause harm through illness. Inconvenience alone is not enough.",s:"Qur’an 5:6; 4:43",u:"https://quran.com/5/6"},
+{id:"f8",c:"fiqh",l:2,q:"An elderly person permanently unable to fast Ramadan should, on the majority view drawn from Qur’an 2:184:",o:["Pay fidyah: feed one poor person for each missed day","Make up the days later","Do nothing, since no obligation remains","Fast double the days after Ramadan"],h:"Ibn ‘Abbas explained that this part of the verse applies to the very old.",e:"Those permanently unable to fast, with no prospect of making up the days, feed a poor person for each day. People who are temporarily ill and travellers make up the days instead.",s:"Qur’an 2:184; Sahih al-Bukhari 4505 (Ibn ‘Abbas)",u:"https://quran.com/2/184"},
+{id:"f9",c:"fiqh",l:2,q:"The legal maxim al-mashaqqah tajlib al-taysir means:",o:["Hardship brings about facilitation","Custom is authoritative","Matters are judged by their objectives","Certainty is not removed by doubt"],h:"Qur’an 2:185: “Allah intends ease for you.”",e:"It is one of the five major legal maxims (al-qawa‘id al-kubra). Concessions such as shortening prayers, tayammum and not fasting while ill derive from it. The other options are three of the remaining major maxims.",s:"Al-Suyuti, al-Ashbah wa’l-Naza’ir; Qur’an 2:185",u:"https://quran.com/2/185"},
+// GENERAL
+{id:"g1",c:"general",l:1,q:"Which surah does not begin with the Basmalah?",o:["At-Tawbah (9)","Al-Anfal (8)","Al-Fatihah (1)","An-Naml (27)"],h:"It opens with a declaration of disassociation (bara’ah).",e:"Surah at-Tawbah is the only surah without an opening Basmalah. An-Naml has it twice: at its start and in Sulayman’s letter (27:30), so the count of 114 is kept.",s:"Qur’an 9:1",u:"https://quran.com/9/1"},
+{id:"g2",c:"general",l:2,q:"Which surah contains the Basmalah twice: once at its opening and once within a verse?",o:["An-Naml","Al-Kahf","Maryam","Yusuf"],h:"It mentions a letter sent to the Queen of Sheba.",e:"In 27:30 the Queen of Sheba says the letter is from Sulayman and begins “In the name of Allah, the Most Compassionate, the Most Merciful.”",s:"Qur’an 27:30",u:"https://quran.com/27/30"},
+{id:"g3",c:"general",l:2,q:"Under Caliph Abu Bakr, which Companion was tasked with gathering the Qur’an into a single compiled copy?",o:["Zayd ibn Thabit","‘Abdullah ibn Mas‘ud","Ubayy ibn Ka‘b","Mu‘awiyah ibn Abi Sufyan"],h:"He had been a scribe of revelation and was young and trustworthy.",e:"After many reciters were killed at al-Yamamah, ‘Umar urged Abu Bakr to compile the Qur’an, and Zayd ibn Thabit gathered it from written materials and memorisation. ‘Uthman later had standard copies made and sent to the provinces.",s:"Sahih al-Bukhari 4986, 4987",u:"https://sunnah.com/bukhari:4986"},
+{id:"g4",c:"general",l:1,q:"Laylat al-Qadr is described in the Qur’an as better than:",o:["A thousand months","A hundred years","Seventy nights","The whole of Ramadan"],h:"Surah al-Qadr, verse 3.",e:"A thousand months is more than 83 years. The Prophet ﷺ urged believers to seek the night in the odd nights of the last ten of Ramadan.",s:"Qur’an 97:3; Sahih al-Bukhari 2017",u:"https://quran.com/97/3"},
+{id:"g5",c:"general",l:1,q:"Before the qiblah changed in the second year after the Hijrah, the Muslims in Madinah prayed facing:",o:["Bayt al-Maqdis (Jerusalem)","The Ka‘bah","Quba","Mount Sinai"],h:"They faced it for sixteen or seventeen months in Madinah.",e:"Al-Bara’ ibn ‘Azib reported that the Prophet ﷺ prayed toward Bayt al-Maqdis for sixteen or seventeen months before Qur’an 2:144 turned the qiblah to the Masjid al-Haram.",s:"Sahih al-Bukhari 40; Qur’an 2:144",u:"https://sunnah.com/bukhari:40"},
+{id:"g6",c:"general",l:1,q:"Which prophet is named most often in the Qur’an?",o:["Musa (Moses)","Ibrahim (Abraham)","‘Isa (Jesus)","Nuh (Noah)"],h:"His story with Pharaoh recurs across many surahs.",e:"Musa is named around 136 times, far more than any other prophet. His story is told from many angles across the Qur’an.",s:"Muhammad Fu’ad ‘Abd al-Baqi, al-Mu‘jam al-Mufahras li-Alfaz al-Qur’an",u:"https://corpus.quran.com/"},
+{id:"g7",c:"general",l:2,q:"In the Hadith of Jibril, the six pillars of iman end with belief in:",o:["Al-Qadar (divine decree), its good and its bad","The Day of Judgement only","The Companions","The five daily prayers"],h:"It follows belief in Allah, His angels, books, messengers and the Last Day.",e:"Iman is to believe in Allah, His angels, His books, His messengers, the Last Day, and al-qadar, its good and its bad.",s:"Sahih Muslim 8a",u:"https://sunnah.com/muslim:8a"},
+{id:"g8",c:"general",l:2,q:"The longest verse in the Qur’an, about recording debts, is:",o:["Al-Baqarah 2:282","Al-Baqarah 2:255","An-Nisa’ 4:11","Al-Ma’idah 5:3"],h:"It instructs believers to write down a debt for a fixed term.",e:"Ayat al-Dayn (2:282) is the longest verse. 2:255 is Ayat al-Kursi, which the Prophet ﷺ described to Ubayy ibn Ka‘b as the greatest verse.",s:"Qur’an 2:282; Sahih Muslim 810",u:"https://quran.com/2/282"},
+{id:"g9",c:"general",l:1,q:"How many verses does Surah al-Baqarah contain?",o:["286","200","176","227"],h:"Its final verse begins “Allah does not burden a soul beyond its capacity.”",e:"Al-Baqarah has 286 verses. The other numbers are the verse counts of Al ‘Imran (200), An-Nisa’ (176) and Ash-Shu‘ara’ (227).",s:"Qur’an 2:286",u:"https://quran.com/2/286"}
+];
+
+/* ---------------- helpers ---------------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const clone=o=>o==null?o:JSON.parse(JSON.stringify(o));
+const debounce=(f,ms)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>f(...a),ms)}};
+const fmt=n=>Number(n||0).toLocaleString("en");
+function hash(s){let h=2166136261;for(const ch of s){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function shuffle(a,r=Math.random){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const LET=["A","B","C","D"];
+const QB={};
+RAW.forEach(x=>{const r=rng(hash(x.id+"iqk"));const idx=shuffle([0,1,2,3],r);QB[x.id]={...x,opts:idx.map(i=>x.o[i]),ans:idx.indexOf(0)}});
+const catCount=c=>RAW.filter(x=>x.c===c).length;
+
+const PRESETS=[["Crescent","#f1c23d"],["Lantern","#4fa3ff"],["Minaret","#3fd0a6"],["Oasis","#ff9a52"],["Falcon","#b993ff"],["Compass","#ff7aa8"],["Palm","#8fdc5c"],["Scroll","#62d6ef"]];
+const WIN=["MashaAllah! Brilliant answer.","Barakallahu feekum — knowledge is light!","Spot on! Keep the momentum going.","Excellent recall. Onward to the next mission!","Alhamdulillah, another mission cleared!","Sharp minds, strong team. Keep climbing!"];
+const MISS=["Not this time. Every scholar was once a student.","Learn it now, own it next round. Keep going!","Close one. Regroup and take the next mission!","Seeking knowledge is itself a reward. The next one is yours!"];
+const pickOne=a=>a[Math.floor(Math.random()*a.length)];
+
+function defaultState(){return{v:1,phase:"lobby",cfg:{timer:30,count:15,cats:Object.keys(CATS),teamCount:6},
+  teams:PRESETS.map((p,i)=>({id:"t"+(i+1),name:p[0],color:p[1]})),stats:{},order:[],qi:0,gen:0,startAt:0,endsAt:0,locks:{},last:null,log:[],rosterSince:0,roster:{}}}
+
+/* ---------------- backends ---------------- */
+function queue(){let p=Promise.resolve();return fn=>(p=p.then(fn).catch(e=>writeFailed(e)))}
+function localBackend(){
+  let state=null;const answers={};const sL=[],aL=[],mL=[];
+  const emitS=()=>sL.forEach(f=>f(clone(state)));
+  const emitA=()=>{aL.forEach(f=>f(clone(answers)));mL.forEach(f=>f(clone(answers[UID]||null)))};
+  return{mode:"local",
+    watchState(f){sL.push(f);setTimeout(()=>f(clone(state)))},
+    saveState(s){state=clone(s);setTimeout(emitS)},
+    watchAnswers(f){aL.push(f);setTimeout(()=>f(clone(answers)))},
+    watchMine(f){mL.push(f);setTimeout(()=>f(clone(answers[UID]||null)))},
+    saveMine(d){answers[UID]=clone(d);setTimeout(emitA)},
+    saveOther(id,d){answers[id]=clone(d);setTimeout(emitA)}};
+}
+function remoteBackend(db,uid){
+  const sDoc=db.doc("game/state"),w=queue(),mw=queue();
+  const fail=e=>{console.warn(e);setConn(false)};
+  return{mode:"remote",
+    watchState(f){sDoc.onSnapshot(s=>{setConn(true);f(s.exists?clone(s.data()):null)},fail)},
+    saveState(s){const c=clone(s);w(()=>sDoc.set(c))},
+    watchAnswers(f){db.collection("answers").onSnapshot(q=>{const o={};q.docs.forEach(d=>{o[d.id]=clone(d.data())});f(o)},fail)},
+    watchMine(f){if(!uid)return f(null);db.doc("answers/"+uid).onSnapshot(s=>f(s.exists?clone(s.data()):null),fail)},
+    saveMine(d){const c=clone(d);mw(()=>db.doc("answers/"+uid).set(c))}};
+}
+function writeFailed(e){
+  console.warn("write failed",e);
+  if(e&&e.code==="invalid_argument"&&ROLE==="player"){ROLE="spectator";toast("Answers can’t be saved","Your access is view-only. Ask the host for Contributor access to join a team.","#ec6c60");render()}
+  else toast("Couldn’t save","Check your connection, then try again.","#ec6c60");
+}
+
+/* ---------------- globals ---------------- */
+let B=null,ROLE="loading",VIEW="board",LOCAL=false,UID=null,S=null,ANS={},MY=null,CONNECTED=false,SOUND=true,BOTS=false;
+let lastKey="",lastCel="",finalCel="",endArm=0,draftNick="",draftTeam="";
+const isHost=()=>ROLE==="host";
+const teamsOf=s=>(s?s.teams.slice(0,s.cfg.teamCount):[]);
+const teamById=id=>S&&S.teams.find(t=>t.id===id);
+const isActive=id=>teamsOf(S).some(t=>t.id===id);
+const pk=()=>"g"+S.gen+"_"+S.qi;
+const curQ=()=>S&&QB[S.order[S.qi]];
+function stage(){if(!S)return"none";if(S.phase!=="question")return S.phase;const n=Date.now();return n<S.startAt?"ready":n<S.endsAt?"live":"over"}
+function setConn(v){if(CONNECTED!==v){CONNECTED=v;renderTop()}}
+
+/* ---------------- host engine ---------------- */
+function hostSave(){if(!isHost()||!S)return;S.rev=(S.rev||0)+1;B.saveState(S)}
+const hostSaveSoon=debounce(hostSave,500);
+function computeRoster(){
+  const r={};teamsOf(S).forEach(t=>r[t.id]=[]);
+  for(const a of Object.values(ANS)){if(!a||!r[a.team])continue;if((a.joinedAt||0)<(S.rosterSince||0))continue;r[a.team].push(String(a.nick||"Player").slice(0,24))}
+  for(const k in r)r[k].sort();return r;
+}
+function activeWithPlayers(){return teamsOf(S).filter(t=>(S.roster[t.id]||[]).length)}
+function engineAnswers(){
+  if(!isHost()||!S)return;
+  let changed=false;const r=computeRoster();
+  if(JSON.stringify(r)!==JSON.stringify(S.roster||{})){S.roster=r;changed=true}
+  if(S.phase==="question"){
+    const key=pk(),now=Date.now();
+    for(const a of Object.values(ANS)){
+      const p=a&&a.picks&&a.picks[key];if(!p||p.c==null)continue;
+      if(!isActive(a.team)||S.locks[a.team])continue;
+      if(now<S.startAt-1000||now>S.endsAt+1500)continue;
+      S.locks[a.team]=now;changed=true;beep([660],.06);
+    }
+    const act=activeWithPlayers();
+    if(act.length&&act.every(t=>S.locks[t.id])&&Date.now()>=S.startAt){reveal();return}
+  }
+  if(changed)hostSave();
+}
+function buildOrder(){
+  const cats=S.cfg.cats.filter(c=>CATS[c]);const pools={};cats.forEach(c=>pools[c]=shuffle(RAW.filter(x=>x.c===c).map(x=>x.id)));
+  const total=Math.min(S.cfg.count||999,cats.reduce((n,c)=>n+pools[c].length,0));const out=[];
+  while(out.length<total){for(const c of shuffle(cats)){if(out.length>=total)break;const id=pools[c].shift();if(id)out.push(id)}}
+  return out;
+}
+function startGame(){
+  if(!S.cfg.cats.length)return;
+  S.order=buildOrder();S.gen=Date.now();S.qi=0;S.stats={};S.log=[];S.last=null;
+  teamsOf(S).forEach(t=>S.stats[t.id]={score:0,ok:0,ans:0,streak:0,best:0,hist:""});
+  beginQ();
+}
+function beginQ(){const n=Date.now();S.phase="question";S.startAt=n+3500;S.endsAt=S.startAt+S.cfg.timer*1000;S.locks={};S.last=null;hostSave();if(LOCAL&&BOTS)botsPlay()}
+function reveal(){
+  if(S.phase!=="question")return;
+  const q=curQ(),key=pk(),res={},dur=Math.max(1,S.endsAt-S.startAt);
+  for(const t of teamsOf(S)){
+    const st=S.stats[t.id]||(S.stats[t.id]={score:0,ok:0,ans:0,streak:0,best:0,hist:""});
+    const lockAt=S.locks[t.id];
+    const picks=Object.values(ANS).filter(a=>a&&a.team===t.id).map(a=>a.picks&&a.picks[key]).filter(p=>p&&p.c!=null).sort((x,y)=>(x.t||0)-(y.t||0));
+    if(!lockAt||!picks.length){st.streak=0;st.hist+="-";continue}
+    const p=picks[0],ok=p.c===q.ans;st.ans++;
+    if(ok){
+      const base=q.l===2?150:100,speed=Math.round(50*Math.max(0,Math.min(1,(S.endsAt-lockAt)/dur)));
+      st.streak++;const sb=st.streak>=3?25:0,hp=p.h?25:0,pts=Math.max(0,base+speed+sb-hp);
+      st.score+=pts;st.ok++;st.best=Math.max(st.best,st.streak);st.hist+="1";
+      res[t.id]={c:p.c,ok:true,pts,base,speed,sb,hp,streak:st.streak};
+    }else{st.streak=0;st.hist+="0";res[t.id]={c:p.c,ok:false,pts:0,hp:p.h?25:0}}
+  }
+  S.last={qi:S.qi,res};S.log[S.qi]=res;S.phase="reveal";S.revealAt=Date.now();hostSave();
+}
+function nextQ(){if(S.qi+1>=S.order.length){S.phase="final";hostSave();return}S.qi++;beginQ()}
+function endGame(){if(S.phase==="question")reveal();S.phase="final";hostSave()}
+function newGame(){S.phase="lobby";S.order=[];S.locks={};S.last=null;hostSave()}
+setInterval(()=>{if(isHost()&&S&&S.phase==="question"&&Date.now()>S.endsAt+800)reveal()},400);
+
+/* practice bots (offline mode only) */
+function botsAdd(){BOTS=true;const now=Date.now();teamsOf(S).forEach(t=>{if((S.roster[t.id]||[]).length)return;B.saveOther("bot-"+t.id,{team:t.id,nick:"Practice bot",joinedAt:now,picks:{}})});toast("Practice bots joined","Each empty team now has a bot that answers on its own.")}
+function botsPlay(){
+  const key=pk(),q=curQ(),gen=S.gen,qi=S.qi;
+  Object.keys(ANS).filter(id=>id.startsWith("bot-")).forEach(id=>{
+    const delay=(S.startAt-Date.now())+1500+Math.random()*S.cfg.timer*800;
+    setTimeout(()=>{if(!S||S.phase!=="question"||S.gen!==gen||S.qi!==qi)return;const a=clone(ANS[id]);if(!a)return;
+      const c=Math.random()<.62?q.ans:shuffle([0,1,2,3].filter(i=>i!==q.ans))[0];a.picks={[key]:{c,t:Date.now(),h:Math.random()<.15}};B.saveOther(id,a)},delay);
+  });
+}
+
+/* ---------------- player actions ---------------- */
+function myTeam(){if(!S||!MY)return null;if(!isActive(MY.team))return null;if((MY.joinedAt||0)<(S.rosterSince||0))return null;return teamById(MY.team)}
+function myPick(){return MY&&MY.picks&&S?MY.picks[pk()]:null}
+function writeMine(){B.saveMine(MY);render()}
+function joinTeam(team,nick){
+  const keep=MY&&MY.gen===S.gen?MY.picks:{};
+  MY={team,nick:String(nick||"Player").trim().slice(0,24)||"Player",joinedAt:Date.now(),gen:S.gen,picks:keep||{}};writeMine();
+}
+function ensureGen(){if(MY.gen!==S.gen){MY.gen=S.gen;MY.picks={}}}
+function canAnswer(){const t=myTeam();if(!t||stage()!=="live")return false;const p=myPick();if(p&&p.c!=null)return false;return!S.locks[t.id]}
+function choose(i){if(!canAnswer())return;ensureGen();const prev=MY.picks[pk()]||{};MY.picks[pk()]={c:i,t:Date.now(),h:!!prev.h};beep([520,780],.08);writeMine()}
+function useHint(){if(!canAnswer())return;ensureGen();const prev=MY.picks[pk()]||{};MY.picks[pk()]={...prev,h:true};writeMine()}
+
+/* ---------------- rendering ---------------- */
+function renderTop(){
+  const el=$("#topright");const bits=[];
+  if(ROLE==="loading"){el.innerHTML='<span class="pill"><span class="dot off"></span>Connecting…</span>';return}
+  if(isHost())bits.push(`<div class="tabs" role="group" aria-label="View"><button data-view="board" aria-pressed="${VIEW==="board"}">Host board</button><button data-view="player" aria-pressed="${VIEW==="player"}">Player view</button></div>`);
+  bits.push(`<span class="pill gold">${isHost()?"Admin":ROLE==="player"?"Player":"Spectator"}</span>`);
+  bits.push(LOCAL?'<span class="pill"><span class="dot off"></span>Offline practice</span>':`<span class="pill"><span class="dot ${CONNECTED?"":"off"}"></span>${CONNECTED?"Live":"Reconnecting…"}</span>`);
+  el.innerHTML=bits.join("");
+  el.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{VIEW=b.dataset.view;renderTop();lastKey="";render()});
+  $("#banner").innerHTML=LOCAL?'<div class="banner">Offline practice mode: this device runs both the host board and a player view. Open the published link to play live across 6–8 team devices.</div>':"";
+}
+function viewKey(){return[ROLE,VIEW,S&&S.phase,S&&S.qi,S&&S.gen,stage(),!!myTeam()].join("|")}
+function render(){
+  const v=$("#view");const key=viewKey();
+  const focused=v.contains(document.activeElement)&&/INPUT|SELECT/.test(document.activeElement.tagName);
+  if(focused&&key===lastKey){patchLive();return}
+  lastKey=key;
+  if(ROLE==="loading"){v.innerHTML=heroHTML("Connecting to the quest room…");return}
+  const playerish=ROLE==="player"||(isHost()&&VIEW==="player");
+  v.innerHTML=playerish?playerHTML():isHost()?hostHTML():spectatorHTML();
+  bind();renderDock();updateTimers();maybeCelebrate(playerish);
+}
+function patchLive(){const r=$("#rosterBox");if(r)r.innerHTML=rosterHTML();const tp=$("#tpickBox");if(tp)tp.innerHTML=teamPickHTML()}
+
+function starSVG(cls,fill){return`<svg class="${cls}" viewBox="0 0 100 100" aria-hidden="true"><g fill="${fill||"none"}" stroke="#f1c23d" stroke-width="3"><rect x="22" y="22" width="56" height="56"/><rect x="22" y="22" width="56" height="56" transform="rotate(45 50 50)"/></g></svg>`}
+function heroHTML(sub){
+  return`<section class="hero">${starSVG("bigstar spinstar")}
+  <div class="eyebrow">Team missions · Seerah · Hadith · Tajweed · Fiqh · General knowledge</div>
+  <h2>Six to eight teams. One quest. <em>Who will lead the board?</em></h2>
+  <p>${esc(sub||"Every team answers each mission at the same moment on its own device. Lock in fast for a speed bonus, build streaks, and learn from the source behind every answer.")}</p>
+  <div class="rules">
+    <div class="rule"><b>100 / 150</b><span>Advanced / Expert correct answer</span></div>
+    <div class="rule"><b>+50</b><span>Speed bonus, shrinking as the clock runs</span></div>
+    <div class="rule"><b>+25</b><span>Streak bonus from 3 correct in a row</span></div>
+    <div class="rule"><b>−25</b><span>If the answering player used a hint</span></div>
+  </div></section>`;
+}
+
+/* ---- host ---- */
+function hostHTML(){
+  if(S.phase==="lobby")return heroHTML()+setupHTML();
+  if(S.phase==="final")return finalHTML(false);
+  return boardHTML(true);
+}
+function setupHTML(){
+  const c=S.cfg;
+  const teams=S.teams.slice(0,c.teamCount).map((t,i)=>`<label class="trow" style="--c:${t.color}"><span class="sw"></span><input id="team-name-${i}" data-tn="${i}" value="${esc(t.name)}" maxlength="22" aria-label="Team ${i+1} name"></label>`).join("");
+  const cats=Object.entries(CATS).map(([k,v])=>`<button class="cat" data-cat="${k}" aria-pressed="${c.cats.includes(k)}">${esc(v.name)} <small>${catCount(k)}</small></button>`).join("");
+  const avail=c.cats.reduce((n,k)=>n+catCount(k),0);
+  const counts=[10,15,20,30,0].map(n=>`<button data-count="${n}" aria-pressed="${c.count===n}">${n||"All "+avail}</button>`).join("");
+  const timers=[20,30,45,60].map(n=>`<button data-timer="${n}" aria-pressed="${c.timer===n}">${n}s</button>`).join("");
+  const nTeams=[6,7,8].map(n=>`<button data-tc="${n}" aria-pressed="${c.teamCount===n}">${n} teams</button>`).join("");
+  const nq=Math.min(c.count||999,avail);
+  return`<div class="setup">
+   <section class="card stage stack">
+     <div><p class="label">Teams</p><div class="seg" role="group" aria-label="Number of teams">${nTeams}</div></div>
+     <div class="teamgrid">${teams}</div>
+     <div><p class="label">Missions</p><div class="cats">${cats}</div></div>
+     <div class="row" style="gap:20px">
+       <div><p class="label">Questions</p><div class="seg" role="group" aria-label="Number of questions">${counts}</div></div>
+       <div><p class="label">Countdown per question</p><div class="seg" role="group" aria-label="Seconds per question">${timers}</div></div>
+     </div>
+     <div class="row"><button class="btn gold big" id="startBtn" ${c.cats.length?"":"disabled"}>Start the quest · ${nq} missions</button>
+     ${LOCAL?'<button class="btn ghost" id="botsBtn">Fill empty teams with practice bots</button>':""}</div>
+   </section>
+   <aside class="card stack">
+     <div><h3>Who has joined</h3><div class="roster" id="rosterBox">${rosterHTML()}</div></div>
+     <div class="row"><button class="btn ghost" id="clearRoster">Clear the roster</button></div>
+     <div class="share"><b style="color:var(--text)">How players join</b><ol>
+       <li>Share this page with Contributor access, so players can submit answers. Viewers can watch the board but cannot answer.</li>
+       <li>Each player opens the link on a phone or laptop, types a nickname and picks a team.</li>
+       <li>Show this host board on the big screen and press Start.</li></ol></div>
+   </aside></div>`;
+}
+function rosterHTML(){
+  return teamsOf(S).map(t=>{const names=(S.roster&&S.roster[t.id])||[];
+    return`<div class="rteam" style="--c:${t.color}"><span class="sw" style="margin-top:4px"></span><div style="min-width:0"><b>${esc(t.name)} <span class="muted" style="font-weight:600">· ${names.length} ${names.length===1?"player":"players"}</span></b><div class="names">${names.length?names.map(esc).join(", "):"Waiting for players"}</div></div></div>`}).join("");
+}
+
+function progressHTML(){
+  const n=S.order.length,done=S.qi+(S.phase==="reveal"||S.phase==="final"?1:0);
+  const per={};S.order.forEach((id,i)=>{const c=QB[id].c;per[c]=per[c]||{n:0,d:0};per[c].n++;if(i<done)per[c].d++});
+  const cur=curQ();
+  return`<div class="progress"><span class="mission" style="font-variant-numeric:tabular-nums">Mission ${Math.min(S.qi+1,n)} of ${n}</span><div class="bar" aria-hidden="true"><i style="width:${n?done/n*100:0}%"></i></div>
+  <div class="missions">${Object.entries(per).map(([c,v])=>`<span class="mchip ${cur&&cur.c===c&&S.phase!=="final"?"on":""}">${esc(CATS[c].name)} ${v.d}/${v.n}</span>`).join("")}</div></div>`;
+}
+function ringHTML(){return`<div class="ring" data-ring data-start="${S.startAt}" data-end="${S.endsAt}" role="timer" aria-label="Time remaining"><svg viewBox="0 0 120 120"><circle class="rt" cx="60" cy="60" r="52"/><circle class="rp" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="0"/></svg><b>${S.cfg.timer}</b></div>`}
+function qMetaHTML(q){return`<div class="qmeta"><span class="tag">${esc(CATS[q.c].name)}</span><span class="tag ${q.l===2?"exp":""}">${q.l===2?"Expert · 150":"Advanced · 100"}</span><span class="mission">${esc(CATS[q.c].mission)}</span></div>`}
+function sourceHTML(q){return`<div class="src"><b>Source:</b> ${esc(q.s)}${q.u?` · <a href="${esc(q.u)}" target="_blank" rel="noopener">Open reference ↗</a>`:""}</div>`}
+function readyHTML(q){return`<div class="ready"><div class="eyebrow">${esc(CATS[q.c].mission)}</div><div class="num" data-ready>3</div><h2>Get ready, teams!</h2><p class="muted">Mission ${S.qi+1} · ${esc(CATS[q.c].name)} · ${q.l===2?"Expert":"Advanced"}</p></div>`}
+
+function boardHTML(host){
+  const q=curQ(),st=stage(),rev=S.phase==="reveal";
+  let stageInner;
+  if(st==="ready")stageInner=readyHTML(q);
+  else{
+    const res=rev&&S.last?S.last.res:{};
+    const opts=q.opts.map((o,i)=>{
+      const who=rev?teamsOf(S).filter(t=>res[t.id]&&res[t.id].c===i).map(t=>`<span class="tchip" style="--c:${t.color}"><i></i>${esc(t.name)}</span>`).join(""):"";
+      const cls=rev?(i===q.ans?"correct":who?"wrong":"dim"):"";
+      return`<div class="opt ${cls}"><span class="L">${LET[i]}</span><span class="t">${esc(o)}${who?`<span class="who">${who}</span>`:""}</span></div>`}).join("");
+    stageInner=`<div class="qhead"><div style="min-width:0">${qMetaHTML(q)}<div class="qtext">${esc(q.q)}</div></div>${rev?"":ringHTML()}</div>
+      ${q.ar?`<div class="arabic" lang="ar">${esc(q.ar)}</div>`:""}
+      <div class="opts">${opts}</div>
+      ${rev?`<div class="explain"><b class="k">Answer ${LET[q.ans]}: ${esc(q.opts[q.ans])}</b>${esc(q.e)}${sourceHTML(q)}</div>`:
+        `<div class="status">${st==="over"?"Time is up. Revealing…":`${Object.keys(S.locks).length} of ${teamsOf(S).length} teams locked in`}</div>`}`;
+  }
+  return progressHTML()+`<div class="board"><section class="card stage">${stageInner}</section><aside class="card"><h3>Team board</h3><div class="tb">${teamBoardHTML()}</div></aside></div>`;
+}
+function ranked(){const t=teamsOf(S).map(t=>({...t,st:S.stats[t.id]||{score:0,ok:0,ans:0,streak:0,best:0,hist:""}}));return t.sort((a,b)=>b.st.score-a.st.score||b.st.ok-a.st.ok||a.id.localeCompare(b.id))}
+function teamBoardHTML(){
+  const rev=S.phase==="reveal",res=rev&&S.last?S.last.res:{},mine=myTeam();
+  return ranked().map((t,i)=>{
+    const r=res[t.id],n=(S.roster&&S.roster[t.id]||[]).length;
+    let status="",cls="";
+    if(S.phase==="question"){status=S.locks[t.id]?'<span class="st lk">Locked in</span>':'<span class="st">Thinking…</span>';if(S.locks[t.id])cls="locked"}
+    else if(rev){status=r?(r.ok?`<span class="st ok">+${r.pts}</span>`:'<span class="st no">Missed</span>'):'<span class="st">No answer</span>';if(r&&r.ok)cls="win"}
+    const hist=[...(t.st.hist||"")].map(h=>`<i class="${h==="1"?"y":h==="0"?"n":""}"></i>`).join("");
+    const flame=t.st.streak>=2?`<span class="flame">· ${t.st.streak} in a row</span>`:"";
+    return`<div class="team ${cls} ${mine&&mine.id===t.id?"me":""}" style="--c:${t.color}">
+      <div class="rank">${i+1}</div>
+      <div style="min-width:0"><div class="nm">${esc(t.name)}</div><div class="sub">${n} ${n===1?"player":"players"} · ${t.st.ok}/${t.st.ans} correct ${flame}</div>${hist?`<div class="hist" aria-label="Answer history">${hist}</div>`:""}</div>
+      <div><div class="sc">${fmt(t.st.score)}</div>${status}</div>
+      ${rev&&r&&r.ok?`<span class="delta">+${r.pts}</span>`:""}</div>`}).join("");
+}
+
+/* ---- dock (host controls) ---- */
+function renderDock(){
+  let d=$("#dock");
+  const show=isHost()&&VIEW==="board"&&S&&S.phase!=="lobby";
+  if(!show){if(d)d.remove();return}
+  if(!d){d=document.createElement("div");d.id="dock";d.className="dock";document.body.appendChild(d)}
+  const last=S.qi+1>=S.order.length;let html="";
+  if(S.phase==="question")html=`<span class="info">Auto-reveals when every team with players has locked in, or when time runs out.</span><button class="btn blue" id="revealBtn">Reveal now</button>`;
+  else if(S.phase==="reveal")html=`<button class="btn gold big" id="nextBtn">${last?"Show final standings":"Next mission →"}</button>`;
+  else if(S.phase==="final")html=`<button class="btn gold" id="newBtn">New game with the same teams</button>`;
+  if(S.phase!=="final")html+=`<button class="btn warn" id="endBtn">${endArm>Date.now()?"Tap again to end the game":"End game"}</button>`;
+  html+=`<button class="btn ghost" id="soundBtn" aria-pressed="${SOUND}">Sound ${SOUND?"on":"off"}</button>`;
+  d.innerHTML=html;
+  const on=(id,f)=>{const b=d.querySelector(id);if(b)b.onclick=f};
+  on("#revealBtn",()=>reveal());on("#nextBtn",()=>nextQ());on("#newBtn",()=>newGame());
+  on("#endBtn",()=>{if(endArm>Date.now()){endArm=0;endGame()}else{endArm=Date.now()+4000;renderDock();setTimeout(renderDock,4100)}});
+  on("#soundBtn",()=>{SOUND=!SOUND;renderDock()});
+}
+
+/* ---- spectator ---- */
+function spectatorHTML(){
+  if(!S)return heroHTML("The host hasn’t set up the quest yet. This page updates by itself when the game begins.");
+  if(S.phase==="lobby")return heroHTML("Teams are gathering. You’re watching as a spectator: ask the host for Contributor access if you want to join a team.")+`<section class="card" style="margin-top:16px"><h3>Teams</h3><div class="roster">${rosterHTML()}</div></section>`;
+  if(S.phase==="final")return finalHTML(false);
+  return boardHTML(false);
+}
+
+/* ---- player ---- */
+function teamPickHTML(){
+  const sel=draftTeam||(MY&&MY.team)||"";
+  return teamsOf(S).map(t=>{const n=(S.roster&&S.roster[t.id]||[]).length;
+    return`<button class="tp" style="--c:${t.color}" data-pick="${t.id}" aria-pressed="${sel===t.id}"><b><span class="sw"></span>${esc(t.name)}</b><small>${n} ${n===1?"player":"players"}</small></button>`}).join("");
+}
+function joinHTML(){
+  return`<section class="card stage stack"><div><div class="eyebrow">Join a team</div><h2 style="font-size:1.6rem;margin-top:6px">Choose your team and nickname</h2></div>
+    <label><span class="label" style="display:block">Nickname shown on the board</span><input id="nick" maxlength="24" placeholder="e.g. Yusuf" value="${esc(draftNick||(MY&&MY.nick)||"")}"></label>
+    <div class="tpick" id="tpickBox">${teamPickHTML()}</div>
+    <div class="row"><button class="btn gold big" id="joinBtn">Join team</button>${MY&&myTeam()?'<button class="btn ghost" id="cancelSwitch">Keep my current team</button>':""}</div>
+    <p class="muted" style="margin:0">Everyone on a team can answer. The first answer from your team locks it in for everyone.</p></section>`;
+}
+let switching=false;
+function playerHTML(){
+  if(!S)return heroHTML("The host hasn’t opened the quest yet. Keep this page open: it will update by itself.");
+  const t=myTeam();
+  if(S.phase==="final")return finalHTML(true);
+  if(!t||switching)return`<div class="pwrap">${S.phase==="lobby"?heroHTML():`<div class="banner">A game is in progress. Join a team to play from the next question.</div>`}${joinHTML()}</div>`;
+  const youare=`<div class="card youare" style="--c:${t.color}"><div class="badge">${esc(t.name[0]||"?")}</div><div style="min-width:0;flex:1"><div class="eyebrow">Team ${esc(t.name)}</div><div style="font-weight:700">${esc(MY.nick)} · ${esc((S.roster[t.id]||[]).join(", ")||"you")}</div></div>${S.phase==="lobby"?'<button class="btn ghost" id="switchBtn">Switch team</button>':`<div class="sc" style="font-family:var(--display);font-size:1.6rem;font-weight:700">${fmt((S.stats[t.id]||{}).score)}</div>`}</div>`;
+  if(S.phase==="lobby")return`<div class="pwrap">${youare}<section class="card stage ready"><div class="num" style="font-size:3rem;animation:none">${starSVG("seal")}</div><h2>You’re in! Waiting for the host to start.</h2><p class="muted">Missions: ${S.cfg.cats.map(c=>esc(CATS[c].name)).join(" · ")} · ${S.cfg.timer}s per question</p></section></div>`;
+  const q=curQ(),st=stage();
+  if(S.phase==="question"){
+    if(st==="ready")return`<div class="pwrap">${youare}<section class="card stage">${readyHTML(q)}</section></div>`;
+    const p=myPick()||{},locked=S.locks[t.id],can=canAnswer();
+    const opts=q.opts.map((o,i)=>`<button class="opt ${p.c===i?"mine":""}" data-ans="${i}" ${can?"":"disabled"}><span class="L">${LET[i]}</span><span class="t">${esc(o)}</span></button>`).join("");
+    let status;
+    if(p.c!=null)status=`<div class="status lock">You locked in ${LET[p.c]} for Team ${esc(t.name)}. Waiting for the reveal…</div>`;
+    else if(locked)status=`<div class="status lock">A teammate locked in your team’s answer. Waiting for the reveal…</div>`;
+    else if(st==="over")status=`<div class="status">Time is up.</div>`;
+    else status=`<div class="row" style="margin-top:14px"><button class="btn ghost" id="hintBtn" ${p.h?"disabled":""}>${p.h?"Hint shown":"Show hint (−25 if you answer)"}</button></div>`;
+    return`<div class="pwrap">${youare}<section class="card stage"><div class="qhead"><div style="min-width:0">${qMetaHTML(q)}<div class="mission" style="font-variant-numeric:tabular-nums">Mission ${S.qi+1} of ${S.order.length}</div></div>${ringHTML()}</div>
+      <div class="qtext">${esc(q.q)}</div>${q.ar?`<div class="arabic" lang="ar">${esc(q.ar)}</div>`:""}
+      <div class="opts">${opts}</div>${p.h?`<div class="hint"><b>Hint:</b> ${esc(q.h)}</div>`:""}${status}</section></div>`;
+  }
+  // reveal
+  const r=S.last&&S.last.res[t.id];const rank=ranked().findIndex(x=>x.id===t.id)+1;
+  const head=r?(r.ok?`<div class="status" style="border-color:var(--ok);color:var(--ok)">Correct! Team ${esc(t.name)} earned +${r.pts}</div>
+     <div class="breakdown"><span>Base ${r.base}</span><span>Speed +${r.speed}</span>${r.sb?`<span>Streak +${r.sb}</span>`:""}${r.hp?`<span>Hint −${r.hp}</span>`:""}</div>`:
+     `<div class="status" style="border-color:var(--bad);color:var(--bad)">Your team chose ${LET[r.c]}. Not this time.</div>`):`<div class="status">Your team didn’t lock an answer in time.</div>`;
+  return`<div class="pwrap">${youare}<section class="card stage">${qMetaHTML(q)}<div class="qtext" style="font-size:1.3rem">${esc(q.q)}</div>${head}
+    <div class="explain"><b class="k">Answer ${LET[q.ans]}: ${esc(q.opts[q.ans])}</b>${esc(q.e)}${sourceHTML(q)}</div>
+    <p class="muted" style="margin:14px 0 0">Your team is <b style="color:var(--gold-hi)">#${rank}</b> of ${teamsOf(S).length}. Waiting for the host to launch the next mission…</p></section>
+    <section class="card"><h3>Team board</h3><div class="tb">${teamBoardHTML()}</div></section></div>`;
+}
+
+/* ---- final ---- */
+function finalHTML(forPlayer){
+  const R=ranked();const top=[R[1],R[0],R[2]];const h=[120,170,90];
+  const pod=top.map((t,i)=>t?`<div class="pod" style="--c:${t.color}"><div class="nm">${esc(t.name)}</div><div class="pts">${fmt(t.st.score)} pts</div><div class="blk" style="height:${h[i]}px">${[2,1,3][i]}</div></div>`:"<div></div>").join("");
+  const strongest=id=>{const by={};S.order.forEach((qid,i)=>{const r=S.log[i]&&S.log[i][id];const c=QB[qid].c;by[c]=by[c]||{ok:0,n:0};by[c].n++;if(r&&r.ok)by[c].ok++});let best=null;for(const[c,v]of Object.entries(by)){if(!best||v.ok/v.n>best.r)best={c,r:v.ok/v.n}}return best&&best.r>0?CATS[best.c].name:"—"};
+  const rows=R.map((t,i)=>`<tr><td>${i+1}</td><td><span class="sw" style="--c:${t.color};display:inline-block;vertical-align:-2px;margin-right:8px"></span>${esc(t.name)}</td><td class="num">${fmt(t.st.score)}</td><td class="num">${t.st.ok}/${S.order.length}</td><td class="num">${t.st.ans?Math.round(t.st.ok/t.st.ans*100)+"%":"—"}</td><td class="num">${t.st.best}</td><td>${esc(strongest(t.id))}</td></tr>`).join("");
+  const mine=forPlayer&&myTeam();const myRank=mine?R.findIndex(x=>x.id===mine.id)+1:0;
+  const review=S.order.map((id,i)=>{const q=QB[id],res=S.log[i]||{};const chips=teamsOf(S).map(t=>{const r=res[t.id];return`<span class="tchip" style="--c:${t.color}"><i></i>${esc(t.name)} ${r?(r.ok?"✓":"✗"):"–"}</span>`}).join("");
+    return`<details class="rev"><summary>${i+1}. ${esc(q.q)}</summary><p><b style="color:var(--ok)">Answer:</b> ${esc(q.opts[q.ans])}</p><p>${esc(q.e)}</p>${sourceHTML(q)}<div class="who" style="margin-top:10px">${chips}</div></details>`}).join("");
+  return`<section class="hero" style="text-align:center">${starSVG("bigstar spinstar")}<div class="eyebrow">Quest complete</div>
+    <h2 style="max-width:none">${R[0]?`Team <em>${esc(R[0].name)}</em> leads the quest!`:"Quest complete"}</h2>
+    <p style="margin-inline:auto">${mine?`Your team, ${esc(mine.name)}, finished #${myRank} of ${R.length}. `:""}Every team leaves with more knowledge than it came with. Barakallahu feekum.</p>
+    <div class="podium">${pod}</div></section>
+    <div class="board" style="grid-template-columns:minmax(0,1fr)">
+    <section class="card"><h3>Final standings</h3><div class="tablewrap"><table><thead><tr><th>#</th><th>Team</th><th class="num">Score</th><th class="num">Correct</th><th class="num">Accuracy</th><th class="num">Best streak</th><th>Strongest mission</th></tr></thead><tbody>${rows}</tbody></table></div></section>
+    <section class="card"><h3>Review every mission</h3><p class="muted" style="margin-top:0">Open a question to revisit its explanation and source. Hadith numbering follows sunnah.com and may vary between editions.</p>${review}</section></div>`;
+}
+
+/* ---- bindings ---- */
+function bind(){
+  const v=$("#view");
+  if(isHost()&&S&&S.phase==="lobby"&&VIEW==="board"){
+    v.querySelectorAll("[data-tn]").forEach(inp=>inp.oninput=()=>{const i=+inp.dataset.tn;S.teams[i].name=inp.value.slice(0,22)||PRESETS[i][0];hostSaveSoon()});
+    v.querySelectorAll("[data-tc]").forEach(b=>b.onclick=()=>{S.cfg.teamCount=+b.dataset.tc;S.roster=computeRoster();hostSave();lastKey="";render()});
+    v.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{const k=b.dataset.cat,a=S.cfg.cats;S.cfg.cats=a.includes(k)?a.filter(x=>x!==k):[...a,k];hostSave();lastKey="";render()});
+    v.querySelectorAll("[data-count]").forEach(b=>b.onclick=()=>{S.cfg.count=+b.dataset.count;hostSave();lastKey="";render()});
+    v.querySelectorAll("[data-timer]").forEach(b=>b.onclick=()=>{S.cfg.timer=+b.dataset.timer;hostSave();lastKey="";render()});
+    const sb=$("#startBtn");if(sb)sb.onclick=()=>{unlockAudio();startGame()};
+    const bb=$("#botsBtn");if(bb)bb.onclick=botsAdd;
+    const cr=$("#clearRoster");if(cr)cr.onclick=()=>{S.rosterSince=Date.now();S.roster=computeRoster();hostSave();lastKey="";render();toast("Roster cleared","Players will be asked to pick a team again.")};
+  }
+  v.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{draftTeam=b.dataset.pick;const n=$("#nick");if(n)draftNick=n.value;v.querySelectorAll("[data-pick]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.pick===draftTeam))});
+  const nick=$("#nick");if(nick)nick.oninput=()=>{draftNick=nick.value};
+  const jb=$("#joinBtn");if(jb)jb.onclick=()=>{const team=draftTeam||(MY&&MY.team);const n=($("#nick").value||"").trim();
+    if(!team){toast("Pick a team","Tap one of the team cards first.","#ec6c60");return}
+    if(!n){toast("Add a nickname","Your team sees it on the board.","#ec6c60");$("#nick").focus();return}
+    if(!UID&&!LOCAL){toast("Sign in to play","You need to be signed in to join a team.","#ec6c60");return}
+    unlockAudio();switching=false;joinTeam(team,n);lastKey="";render()};
+  const sw=$("#switchBtn");if(sw)sw.onclick=()=>{switching=true;draftTeam=MY.team;lastKey="";render()};
+  const cs=$("#cancelSwitch");if(cs)cs.onclick=()=>{switching=false;lastKey="";render()};
+  v.querySelectorAll("[data-ans]").forEach(b=>b.onclick=()=>choose(+b.dataset.ans));
+  const hb=$("#hintBtn");if(hb)hb.onclick=useHint;
+}
+
+/* ---------------- timers ---------------- */
+let lastStage="";
+function updateTimers(){
+  const now=Date.now();
+  document.querySelectorAll("[data-ring]").forEach(el=>{const s=+el.dataset.start,e=+el.dataset.end,rem=Math.max(0,e-now),f=Math.min(1,rem/(e-s));
+    el.querySelector(".rp").style.strokeDashoffset=String(326.7*(1-f));el.querySelector("b").textContent=Math.ceil(rem/1000);el.classList.toggle("urgent",rem>0&&rem<=5000)});
+  document.querySelectorAll("[data-ready]").forEach(el=>{el.textContent=Math.max(1,Math.ceil((S.startAt-now)/1000))});
+}
+setInterval(()=>{if(!S)return;const st=stage();if(st!==lastStage){lastStage=st;render()}else updateTimers()},200);
+
+/* ---------------- celebrations ---------------- */
+function maybeCelebrate(playerish){
+  if(!S)return;
+  if(S.phase==="reveal"&&S.last){
+    const key=S.gen+"_"+S.qi;if(key===lastCel)return;lastCel=key;
+    if(Date.now()-(S.revealAt||0)>20000)return;
+    const res=S.last.res;
+    if(playerish){
+      const t=myTeam();if(!t)return;const r=res[t.id];
+      showOverlay(t,r);if(r&&r.ok){confetti([t.color,"#f1c23d","#93c2ff"],160);beep([523,659,784,1046],.12)}
+    }else{
+      const winners=teamsOf(S).filter(t=>res[t.id]&&res[t.id].ok);
+      if(winners.length){confetti(["#f1c23d","#2d6fd8",...winners.map(t=>t.color)],60+winners.length*30);beep([523,659,784,1046],.12)}
+      winners.forEach((t,i)=>setTimeout(()=>{const r=res[t.id];toast(`Team ${t.name} +${r.pts}`,r.streak>=3?`${r.streak} in a row! Streak bonus +25. ${pickOne(WIN)}`:pickOne(WIN),t.color)},250+i*450));
+      if(!winners.length)toast("No team got this one","Read the explanation together. The next mission is a fresh start!","#93c2ff");
+    }
+  }
+  if(S.phase==="final"){const key=String(S.gen);if(finalCel!==key){finalCel=key;confetti(["#f1c23d","#2d6fd8","#ffffff"],260);beep([392,523,659,784,1046],.16)}}
+}
+function showOverlay(t,r){
+  const ok=r&&r.ok;const o=$("#overlay");
+  const msg=ok?(r.streak>=3?`${r.streak} correct in a row! Streak bonus +25. `:"")+pickOne(WIN):r?pickOne(MISS):"Your team didn’t lock an answer in time. Be quicker next round!";
+  o.innerHTML=`<div class="celebrate" role="dialog" aria-modal="true" aria-label="Round result"><div class="cbox ${ok?"":"miss"}" style="--c:${t.color}">
+    ${starSVG("seal",ok?"rgba(241,194,61,.25)":"none")}<div class="eyebrow">Team ${esc(t.name)}</div>
+    <h2>${ok?"Correct!":"Keep going!"}</h2>${ok?`<div class="cpts">+${r.pts}</div>`:""}<p>${esc(msg)}</p>
+    <button class="btn gold" id="ovClose">${ok?"Alhamdulillah, continue":"See the explanation"}</button></div></div>`;
+  const close=()=>{o.innerHTML=""};$("#ovClose").onclick=close;$("#ovClose").focus();setTimeout(close,6500);
+}
+function toast(title,body,color){
+  const el=document.createElement("div");el.className="toast";el.style.setProperty("--c",color||"#f1c23d");
+  const b=document.createElement("b");b.textContent=title;const s=document.createElement("span");s.textContent=body||"";el.append(b,s);
+  $("#toasts").appendChild(el);setTimeout(()=>el.remove(),6800);
+}
+
+/* confetti: canvas particles — rectangles and small eight-point stars */
+const fx=$("#fx"),ctx=fx.getContext("2d");let parts=[],raf=0;
+const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function confetti(colors,n){
+  if(reduced)return;const W=fx.width=innerWidth*devicePixelRatio,H=fx.height=innerHeight*devicePixelRatio;
+  for(let i=0;i<n;i++)parts.push({x:W*(.2+Math.random()*.6),y:H*.35+Math.random()*H*.1,vx:(Math.random()-.5)*16*devicePixelRatio,vy:(-8-Math.random()*12)*devicePixelRatio,r:Math.random()*6,vr:(Math.random()-.5)*.3,s:(5+Math.random()*7)*devicePixelRatio,c:colors[i%colors.length],star:Math.random()<.35,life:0});
+  if(!raf)raf=requestAnimationFrame(step);
+}
+function step(){
+  ctx.clearRect(0,0,fx.width,fx.height);
+  parts=parts.filter(p=>p.y<fx.height+40&&p.life<260);
+  for(const p of parts){p.life++;p.vy+=.35*devicePixelRatio;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;
+    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;
+    if(p.star){ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s);ctx.rotate(Math.PI/4);ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s)}else ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);
+    ctx.restore()}
+  raf=parts.length?requestAnimationFrame(step):0;if(!raf)ctx.clearRect(0,0,fx.width,fx.height);
+}
+
+/* sound: tiny synthesized chimes, only after a click unlocks audio */
+let AC=null;
+function unlockAudio(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(e){}}
+document.addEventListener("pointerdown",unlockAudio,{once:true});
+function beep(freqs,len){
+  if(!SOUND||!AC)return;try{const t0=AC.currentTime;freqs.forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type="triangle";o.frequency.value=f;
+    g.gain.setValueAtTime(0,t0+i*len);g.gain.linearRampToValueAtTime(.16,t0+i*len+.01);g.gain.exponentialRampToValueAtTime(.0001,t0+i*len+len*2.4);
+    o.connect(g).connect(AC.destination);o.start(t0+i*len);o.stop(t0+i*len+len*2.6)})}catch(e){}
+}
+
+/* ---------------- boot ---------------- */
+function onState(d){
+  if(d)S=d;else if(isHost())S=S||defaultState();else S=null;
+  if(S&&isHost())engineAnswers();
+  render();
+}
+async function boot(){
+  renderTop();render();
+  let db=null,user=null;
+  if(window.claude&&window.claude.use){try{[db,user]=await Promise.all([window.claude.use("db"),window.claude.use("user")])}catch(e){db=null}}
+  if(!db){LOCAL=true;UID="local-host";ROLE="host";B=localBackend();S=defaultState()}
+  else{
+    const me=user?await user.me():null;UID=me&&me.id||null;
+    const canEdit=user?await user.canEdit():false;const canW=user?await user.can("data.write"):null;
+    ROLE=canEdit?"host":(UID&&canW!==false?"player":"spectator");
+    VIEW=ROLE==="host"?"board":"player";B=remoteBackend(db,UID);
+  }
+  renderTop();
+  B.watchState(onState);
+  if(isHost())B.watchAnswers(a=>{ANS=a||{};engineAnswers();render()});
+  if(ROLE!=="spectator")B.watchMine(d=>{if(d)MY=d;render()});
+  render();
+}
+boot();
+</script>
+
+</body></html>
